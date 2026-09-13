@@ -1,0 +1,45 @@
+template<class T,class=void>struct I:false_type{};
+template<class T>struct I<T,void_t<decltype(begin(declval<T&>())),decltype(end(declval<T&>()))>>:true_type{};
+template<class T>struct R{const T&x;int n;};
+template<class T>R<T> cut(const T&x,int n){return{x,n};}
+
+struct debug{
+ ~debug(){cerr<<'\n';}
+ template<class T>debug&operator<<(const T&x){p(x);return*this;}
+
+ template<size_t N>void p(const char(&x)[N]){cerr<<x;}
+ template<class T>enable_if_t<!I<T>::value||is_same_v<T,string>>p(const T&x){cerr<<x;}
+ template<class T>enable_if_t<I<T>::value&&!is_same_v<T,string>>p(const T&x){q(x,INT_MAX);}
+ template<class T>void p(const R<T>&x){r(x.x,x.n);}
+
+ template<class T>void q(const T&x,int n){cerr<<"[";int f=0;for(auto&y:x){if(!n--)break;*this<<(f++?", ":"")<<y;}cerr<<"]";}
+ template<class T>enable_if_t<I<T>::value&&!is_same_v<T,string>>r(const T&x,int n){q(x,n);}
+ void r(const string&x,int n){cerr<<x.substr(0,n);}
+ template<size_t N>void r(const char(&x)[N],int n){for(int i=0;i<n&&i<N-1;i++)cerr<<x[i];}
+
+ template<class A,class B>void p(const pair<A,B>&x){*this<<"("<<x.first<<", "<<x.second<<")";}
+ template<class...T>void p(const tuple<T...>&x){cerr<<"(";int f=0;apply([&](auto&...a){((*this<<(f++?", ":"")<<a),...);},x);cerr<<")";}
+
+ template<class T,class C>void p(stack<T,C>x){s(x,INT_MAX);}
+ template<class T,class C>void r(const stack<T,C>&x,int n){s(x,n);}
+ template<class T,class C>void s(stack<T,C>x,int n){cerr<<"[";int f=0;while(n--&&x.size())*this<<(f++?", ":"")<<x.top(),x.pop();cerr<<"]";}
+
+ template<class T,class C>void p(queue<T,C>x){q(x,INT_MAX);}
+ template<class T,class C>void r(const queue<T,C>&x,int n){q(x,n);}
+ template<class T,class C>void q(queue<T,C>x,int n){cerr<<"[";int f=0;while(n--&&x.size())*this<<(f++?", ":"")<<x.front(),x.pop();cerr<<"]";}
+
+ template<class T,class C,class F>void p(priority_queue<T,C,F>x){h(x,INT_MAX);}
+ template<class T,class C,class F>void r(const priority_queue<T,C,F>&x,int n){h(x,n);}
+ template<class T,class C,class F>void h(priority_queue<T,C,F>x,int n){cerr<<"[";int f=0;while(n--&&x.size())*this<<(f++?", ":"")<<x.top(),x.pop();cerr<<"]";}
+};
+
+#define dbg(x) "["<<#x<<": "<<x<<"] "
+#define dbgn(x,n) "["<<#x<<": "<<cut(x,n)<<"] "
+
+#ifdef LOCAL
+#define Wa() cerr<<"[L"<<__LINE__<<"] ";debug()<<
+#else
+#define Wa() if(0) debug()<<
+#endif
+
+#define FASTIO ios::sync_with_stdio(0);cin.tie(0);
